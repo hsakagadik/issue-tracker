@@ -82,9 +82,18 @@ module.exports = function (app, database) {
       }
     })
     
-    .delete(function (req, res){
-      //const project = req.params.project;
-      
+    .delete(async function (req, res){
+      // Constants
+      const project = req.params.project;
+      try {
+        const issueId =  new ObjectId(req.body._id);
+        if(!req.body.hasOwnProperty('_id')){throw new Error("missing _id")}
+        const result = await database.collection(project).deleteOne({_id: issueId});
+        if(result.deletedCount < 1){throw new Error("could not delete")}
+        res.send({result: 'successfully deleted', _id: issueId.toHexString()});
+      } catch (error) {
+        res.send({error: error.errmsg || error.message, _id: req.body._id});
+      }      
     });
     
 };

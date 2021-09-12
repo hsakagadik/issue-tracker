@@ -201,43 +201,48 @@ suite('Functional Tests', function() {
         });
     });
     test('Delete an issue: DELETE request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            _id: issues[0]._id
+        };
+        const response = {result: "successfully deleted", _id: body._id.toHexString()}
         chai
         .request(server)
-        .delete("/api/issues/{project}")
+        .delete("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Delete an issue with an invalid _id: DELETE request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            _id: new ObjectId(123)
+        };
+        const response = {
+            error: "could not delete",
+            _id: body._id.toHexString()
+        };
         chai
         .request(server)
-        .delete("/api/issues/{project}")
+        .delete("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Delete an issue with missing _id: DELETE request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
         chai
         .request(server)
-        .delete("/api/issues/{project}")
+        .delete("/api/issues/minion")
+        .send({})
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify({ error: 'missing _id' }));
             done();
-        }); */
-        assert.fail();
+        });
     });
 });
 
