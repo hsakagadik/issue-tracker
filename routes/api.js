@@ -1,20 +1,24 @@
 'use strict';
 
 const projectsSchema = require('../schema/projects');
+const ObjectId = require('mongodb').ObjectId;
 
 module.exports = function (app, database) {
 
   app.route('/api/issues/:project')
   
-    .get(function (req, res){
-      database.collection(project).command({ collMod: project, validator: { $jsonSchema: projectsSchema}});
-      database.collection(project).findOne({ project: project }, function (err, project) {
-        if (err) {
-          next(err);
-        } else if (project) {
-          res.send(project);
+    .get(async function (req, res){
+      const project = req.params.project;
+      const query = req.query;
+      const schemaRes =  await database.command({ collMod: project, validator: { $jsonSchema: projectsSchema}});
+      if(schemaRes.ok){
+        try {
+          const result = await database.collection(project).find(query).toArray();
+          res.send(result);
+        } catch (error) {
+          res.send({error: error.errmsg || error.message});
         }
-      });
+      }
     }) 
 
     .post(async function (req, res){
@@ -23,7 +27,7 @@ module.exports = function (app, database) {
       const mandatoryFields = ["issue_title" , "issue_text", "created_by"];
       const ERR_NOT_NULL = 'required field(s) missing';
       
-      // Schema validation
+      // Schema validation for project
       const schemaRes =  await database.command({ collMod: project, validator: { $jsonSchema: projectsSchema}});
       if(schemaRes.ok){
         try {
@@ -52,12 +56,13 @@ module.exports = function (app, database) {
     })
     
     .put(function (req, res){
-      let project = req.params.project;
-      
+      // Constants
+      const project = req.params.project;
+
     })
     
     .delete(function (req, res){
-      let project = req.params.project;
+      //const project = req.params.project;
       
     });
     
