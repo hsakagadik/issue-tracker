@@ -55,10 +55,31 @@ module.exports = function (app, database) {
       }
     })
     
-    .put(function (req, res){
+    .put(async function (req, res){
       // Constants
       const project = req.params.project;
-
+      try {
+        if(!req.body.hasOwnProperty('_id')){throw new Error('missing _id')} 
+        else if(Object.keys(req.body).length <= 1){throw new Error("no update field(s) sent")}
+        const issue = {
+          _id: new ObjectId(req.body._id),
+          issue_title: req.body.issue_title,
+          issue_text: req.body.issue_text,
+          created_by: req.body.created_by,
+          created_on: new Date(req.body.created_on),
+          updated_on: new Date(Date.now()),
+          assigned_to: req.body.assigned_to,
+          status_text: req.body.status_text,
+          open: Boolean(req.body.open)
+        };
+        // Clean undefined optional fields
+        Object.keys(issue).forEach(key => issue[key] === undefined ? delete issue[key] : {});
+        const result = await database.collection(project).updateOne({_id: issue._id}, { $set: issue });
+        if(result.modifiedCount < 1){throw new Error("could not update")}
+        res.send({result: 'successfully updated', _id: issue._id.toHexString()});
+      } catch (error) {
+        res.send({error: error.errmsg || error.message, _id: req.body._id});
+      }
     })
     
     .delete(function (req, res){

@@ -25,7 +25,7 @@ suite('Functional Tests', function() {
                 const db = await client.db('projects').collection('minion');
                 await db.deleteMany({});
                 console.log('deleted all');
-                await db.insertMany(issues); //acaaaa
+                await db.insertMany(issues);
                 console.log('issue loaded');
                 done();
             } catch (error) {
@@ -112,69 +112,93 @@ suite('Functional Tests', function() {
         });
     });
     test('Update one field on an issue: PUT request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            _id: issues[0]._id,
+            issue_text: "title modified"
+        };
+        const response = {result: "successfully updated", _id: body._id.toHexString()}
         chai
         .request(server)
-        .put("/api/issues/{project}")
+        .put("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Update multiple fields on an issue: PUT request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            _id: issues[0]._id,
+            issue_text: "title modified",
+            status_text: "in-review"
+        };
+        const response = {
+            result: "successfully updated",
+            _id: body._id.toHexString()
+        };
         chai
         .request(server)
-        .put("/api/issues/{project}")
+        .put("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Update an issue with missing _id: PUT request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            issue_text: "title modified"
+        };
+        const response = { error: 'missing _id' };
         chai
         .request(server)
-        .put("/api/issues/{project}")
+        .put("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Update an issue with no fields to update: PUT request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            _id: issues[0]._id
+        };
+        const response = {
+            error: "no update field(s) sent",
+            _id: body._id.toHexString()
+        };
         chai
         .request(server)
-        .put("/api/issues/{project}")
+        .put("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Update an issue with an invalid _id: PUT request to /api/issues/{project}', function(done){
-        //const response = ;
-        /**
+        const body = {
+            _id: new ObjectId(123),
+            issue_text: "title modified",
+            status_text: "in-review"
+        };
+        const response = {
+            error: "could not update",
+            _id: body._id.toHexString()
+        };
         chai
         .request(server)
-        .put("/api/issues/{project}")
+        .put("/api/issues/minion")
+        .send(body)
         .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, );
+            assert.equal(res.text,JSON.stringify(response));
             done();
-        }); */
-        assert.fail();
+        });
     });
     test('Delete an issue: DELETE request to /api/issues/{project}', function(done){
         //const response = ;
