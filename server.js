@@ -1,7 +1,6 @@
 'use strict';
 const express     = require('express');
 const bodyParser  = require('body-parser');
-const expect      = require('chai').expect;
 const cors        = require('cors');
 const database = require('./connection');
 require('dotenv').config();
@@ -15,26 +14,27 @@ let app = express();
 app.use('/public', express.static(process.cwd() + '/public'));
 
 app.use(cors({origin: '*'})); //For FCC testing purposes only
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-database(async (client) => {
-  const db = await client.db('projects');
-
-  //Sample front-end
-  app.route('/:project/')
+//Sample front-end
+app.route('/:project/')
   .get(function (req, res) {
     res.sendFile(process.cwd() + '/views/issue.html');
   });
 
-  //Index page (static HTML)
-  app.route('/')
+//Index page (static HTML)
+app.route('/')
   .get(function (req, res) {
     res.sendFile(process.cwd() + '/views/index.html');
   });
 
-  //For FCC testing purposes
-  fccTestingRoutes(app);
+//For FCC testing purposes
+fccTestingRoutes(app);
+
+database(async (client) => {
+  const db = await client.db('projects');
+
   //Routing for API 
   apiRoutes(app, db);
 
@@ -43,7 +43,6 @@ database(async (client) => {
     res.send({ title: e, message: 'Unable to connect' });
   });
 });
-
 
 //Start our server and tests!
 const listener = app.listen(process.env.PORT || 3000, function () {

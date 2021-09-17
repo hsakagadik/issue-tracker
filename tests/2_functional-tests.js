@@ -8,6 +8,7 @@ const ObjectId = require('mongodb').ObjectId;
 chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
+    // Test Data
     const iss = {
         issue_title: "issue",
         issue_text: "issue text",
@@ -16,7 +17,7 @@ suite('Functional Tests', function() {
         assigned_to: "nayla",
         updated_on: new Date(Date.now()).toISOString(),
         status_text: "in-progress",
-        open: false
+        open: true
     };
     const issues = [new Issue(iss), new Issue(Object.assign({},iss, {issue_title: "other"})), new Issue(Object.assign({},iss, {issue_title: "other", issue_text: "othertext"}))];
     beforeEach('clean and load db', function(done){
@@ -37,6 +38,7 @@ suite('Functional Tests', function() {
         chai
         .request(server)
         .post("/api/issues/minion")
+        .type('form')
         .send(iss)
         .end(function (err, res) {
             assert.equal(res.status, 200);
@@ -52,8 +54,7 @@ suite('Functional Tests', function() {
             issue_title: iss.issue_title,
             issue_text: iss.issue_text,
             created_by: iss.created_by
-        }
-        
+        };
         chai
         .request(server)
         .post("/api/issues/minion")
@@ -251,9 +252,9 @@ function Issue(obj){
     this.issue_title = obj.issue_title;
     this.issue_text = obj.issue_text;
     this.created_by = obj.created_by;
-    this.created_on = new Date(obj.created_on);
+    this.created_on = new Date(obj.created_on || Date.now);
     this.assigned_to = obj.assigned_to;
     this.status_text = obj.status_text;
-    this.updated_on = new Date(obj.updated_on);
-    this.open = obj.open;
+    this.updated_on = new Date(obj.updated_on || Date.now);
+    this.open = obj.open || false;
 }
