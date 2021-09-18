@@ -1,6 +1,7 @@
 const schema = {
     bsonType: "object",
     required: [ "issue_title", "issue_text", "created_by" ],
+    additionalProperties: false,
     properties: {
         _id: {
             bsonType: "objectId",

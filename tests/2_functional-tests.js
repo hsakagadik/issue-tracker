@@ -3,42 +3,55 @@ const chai = require('chai');
 const assert = chai.assert;
 const expect = chai.expect;
 const server = require('../server');
-const database = require('../connection');
 const ObjectId = require('mongodb').ObjectId;
+const { MongoClient } = require('mongodb');
+const { before, after } = require('mocha');
 chai.use(chaiHttp);
 
+const client = new MongoClient(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+let db;
+let mongoClient;
+// Test Data
+const iss = {
+    issue_title: "issue",
+    issue_text: "issue text",
+    created_by: "nayla",
+    created_on: new Date(Date.now()).toISOString(),
+    assigned_to: "nayla",
+    updated_on: new Date(Date.now()).toISOString(),
+    status_text: "in-progress",
+    open: true
+};
+const issues = [new Issue(iss), new Issue(Object.assign({},iss, {issue_title: "other"})), new Issue(Object.assign({},iss, {issue_title: "other", issue_text: "othertext"}))];
+before(async function (){
+  try {
+      mongoClient = await client.connect();
+      await client.db("admin").command({ ping: 1 });
+      console.log("Connected to DB");
+      db = await client.db('projects').collection('minion');
+  } catch (error) {
+      console.log(error);
+  }
+})
+after(async function(){
+  await mongoClient.close();
+  console.log('Test session closed')
+});
 suite('Functional Tests', function() {
-    // Test Data
-    const iss = {
-        issue_title: "issue",
-        issue_text: "issue text",
-        created_by: "nayla",
-        created_on: new Date(Date.now()).toISOString(),
-        assigned_to: "nayla",
-        updated_on: new Date(Date.now()).toISOString(),
-        status_text: "in-progress",
-        open: true
-    };
-    const issues = [new Issue(iss), new Issue(Object.assign({},iss, {issue_title: "other"})), new Issue(Object.assign({},iss, {issue_title: "other", issue_text: "othertext"}))];
-    beforeEach('clean and load db', function(done){
-        database(async (client) => {
-            try {
-                const db = await client.db('projects').collection('minion');
-                await db.deleteMany({});
-                console.log('deleted all');
-                await db.insertMany(issues);
-                console.log('issue loaded');
-                done();
-            } catch (error) {
-                console.log(error);
-            }
-        })
+    beforeEach('clean and load db', async function(){
+      try {
+          await db.deleteMany({});
+          console.log('deleted all');
+          await db.insertMany(issues);
+          console.log('issue loaded');
+      } catch (error) {
+          console.log(error);
+      }
     });
     test('Create an issue with every field: POST request to /api/issues/{project}', function(done){
         chai
         .request(server)
         .post("/api/issues/minion")
-        .type('form')
         .send(iss)
         .end(function (err, res) {
             assert.equal(res.status, 200);
